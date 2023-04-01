@@ -1,6 +1,7 @@
 package com.muhsanjaved.threads_practice;
 
 
+import android.os.Looper;
 import android.util.Log;
 
 public class DownloadThread extends Thread{
@@ -11,15 +12,19 @@ public class DownloadThread extends Thread{
 //        this.songName = songName;
 //    }
 
+    public DownloadHandler handler;
     @Override
     public void run() {
-        for (String song:PLayList.songs){
-            downloadSong(song);
-        }
+        Looper.prepare();
+        handler = new DownloadHandler();
+        Looper.loop();
 
+        //        for (String song:PLayList.songs){
+//            downloadSong(song);
+//        }
     }
 
-    private void downloadSong(String songName){
+   /* private void downloadSong(String songName){
         Log.d(TAG, "run: starting download");
         try {
             Thread.sleep(4000);
@@ -27,5 +32,5 @@ public class DownloadThread extends Thread{
             e.printStackTrace();
         }
         Log.d(TAG,"download Song: "+songName+" Downloaded.....");
-    }
+    }*/
 }

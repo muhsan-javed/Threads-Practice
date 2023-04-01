@@ -13,8 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.util.concurrent.BlockingDeque;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private ScrollView scrollView;
     private ProgressBar progressBar;
     private Handler mHandler;
-
+    DownloadThread downloadThread;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,24 +38,34 @@ public class MainActivity extends AppCompatActivity {
 
 //        output_text.setText(getString(R.string.lorem_ipsum));
 
-        mHandler = new Handler(getMainLooper()){
+       /* mHandler = new Handler(getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
-
                 String data = msg.getData().getString(MESSAGE_KEY);
-
                 Log.d(TAG, "HandleMessage: "+data);
-
             }
-        };
+        };*/
+
+        downloadThread = new DownloadThread();
+        downloadThread.setName("Download Thread");
+        downloadThread.start();
+
         btnRunCode.setOnClickListener(v -> {
 
             log("Runner Code");
             displayProgressBar(true);
+
+            //Send message to download handler
+            for (String song: PLayList.songs){
+                Message message = Message.obtain();
+                message.obj=song;
+                downloadThread.handler.sendMessage(message);
+            }
+
 //            for (String song:PLayList.songs){
-                DownloadThread thread = new DownloadThread();
-                thread.setName("Download Thread");
-                thread.start();
+//                DownloadThread thread = new DownloadThread();
+//                thread.setName("Download Thread");
+//                thread.start();
 //            }
 
 //            Runnable runnable = new Runnable() {
