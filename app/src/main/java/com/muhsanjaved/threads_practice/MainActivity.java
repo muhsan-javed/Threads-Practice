@@ -15,6 +15,9 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 public class MainActivity extends AppCompatActivity implements AsyncFragment.MyTaskHandler{
 
@@ -30,6 +33,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFragment.MyT
 //    private MyTask myTask;
     private boolean mTaskRunning;
     private AsyncFragment mAsyncFragment;
+
+    private ExecutorService executorService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,14 +43,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFragment.MyT
 
         initViews();
 
-        FragmentManager manager = getSupportFragmentManager();
+       /* FragmentManager manager = getSupportFragmentManager();
         mAsyncFragment = (AsyncFragment) manager.findFragmentByTag(FRAGMENT_TAG);
 
         if (mAsyncFragment == null){
             mAsyncFragment = new AsyncFragment();
             manager.beginTransaction().add(mAsyncFragment,FRAGMENT_TAG).commit();
         }
-
+*/
         btnClear.setOnClickListener(v -> {
             output_text.setText("");
             progressBar.setVisibility(View.INVISIBLE);
@@ -146,8 +152,15 @@ public class MainActivity extends AppCompatActivity implements AsyncFragment.MyT
                 mTaskRunning =true;
             }*/
 
-            mAsyncFragment.runTask("Red", "Green","Blue","Yellow");
+//            mAsyncFragment.runTask("Red", "Green","Blue","Yellow");
+
+            for (int i=0; i<10; i++){
+                Work work = new Work(i+1);
+                executorService.execute(work);
+            }
         });
+
+        executorService = Executors.newFixedThreadPool(5);
     }
 
     @Override
