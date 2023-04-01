@@ -38,15 +38,15 @@ public class MainActivity extends AppCompatActivity {
 
 //        output_text.setText(getString(R.string.lorem_ipsum));
 
-       /* mHandler = new Handler(getMainLooper()){
+        mHandler = new Handler(getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
                 String data = msg.getData().getString(MESSAGE_KEY);
                 Log.d(TAG, "HandleMessage: "+data);
             }
-        };*/
+        };
 
-        downloadThread = new DownloadThread();
+        downloadThread = new DownloadThread(MainActivity.this);
         downloadThread.setName("Download Thread");
         downloadThread.start();
 
@@ -59,8 +59,29 @@ public class MainActivity extends AppCompatActivity {
             for (String song: PLayList.songs){
                 Message message = Message.obtain();
                 message.obj=song;
-                downloadThread.handler.sendMessage(message);
+                downloadThread.downloadHandler.sendMessage(message);
             }
+
+          /*  Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            log("Download Comttete");
+                            displayProgressBar(false);
+                        }
+                    });
+                }
+            });
+            thread.start();*/
+
 
 //            for (String song:PLayList.songs){
 //                DownloadThread thread = new DownloadThread();
@@ -100,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void log(String message) {
+    public void log(String message) {
         Log.i(TAG, message);
         output_text.append(message + "\n");
         scrollTextToEnd();
@@ -110,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void displayProgressBar(boolean display){
+    public void displayProgressBar(boolean display){
         if (display)
             progressBar.setVisibility(View.VISIBLE);
         else
