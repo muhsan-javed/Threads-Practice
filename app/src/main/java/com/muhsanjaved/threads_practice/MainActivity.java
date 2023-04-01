@@ -2,6 +2,7 @@ package com.muhsanjaved.threads_practice;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,9 +16,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AsyncFragment.MyTaskHandler{
 
     private static final String MESSAGE_KEY = "MESSAGE_KEY";
+    private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
     Button btnClear, btnRunCode;
     TextView output_text;
     private static final String TAG ="MyTag";
@@ -25,14 +27,23 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Handler mHandler;
     private DownloadThread downloadThread;
-    private MyTask myTask;
+//    private MyTask myTask;
     private boolean mTaskRunning;
+    private AsyncFragment mAsyncFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         initViews();
+
+        FragmentManager manager = getSupportFragmentManager();
+        mAsyncFragment = (AsyncFragment) manager.findFragmentByTag(FRAGMENT_TAG);
+
+        if (mAsyncFragment == null){
+            mAsyncFragment = new AsyncFragment();
+            manager.beginTransaction().add(mAsyncFragment,FRAGMENT_TAG).commit();
+        }
 
         btnClear.setOnClickListener(v -> {
             output_text.setText("");
@@ -126,18 +137,25 @@ public class MainActivity extends AppCompatActivity {
 
 //            MyTask myTask1 =  new MyTask();
 //            myTask1.execute("Red", "Green","Blue","Yellow");
-            if (mTaskRunning && myTask != null){
+         /*   if (mTaskRunning && myTask != null){
                 myTask.cancel(true);
                 mTaskRunning=false;
             }else {
                 myTask =  new MyTask();
                 myTask.execute("Red", "Green","Blue","Yellow");
                 mTaskRunning =true;
-            }
+            }*/
+
+            mAsyncFragment.runTask("Red", "Green","Blue","Yellow");
         });
     }
 
-    class MyTask extends AsyncTask<String,String,String>{
+    @Override
+    public void handlerTask(String message) {
+            log(message);
+    }
+
+   /* class MyTask extends AsyncTask<String,String,String>{
 
         @Override
         protected String doInBackground(String... strings) {
@@ -162,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... values) {
-
             log(values[0]);
         }
         @Override
@@ -178,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onCancelled(String s) {
             log("Cancelled with return data,:" + s);
         }
-    }
+    }*/
 
     public void log(String message) {
         Log.i(TAG, message);
