@@ -3,6 +3,7 @@ package com.muhsanjaved.threads_practice;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,7 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private ScrollView scrollView;
     private ProgressBar progressBar;
     private Handler mHandler;
-    DownloadThread downloadThread;
+    private DownloadThread downloadThread;
+    private MyTask myTask;
+    private boolean mTaskRunning;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        output_text.setText(getString(R.string.lorem_ipsum));
 
-        mHandler = new Handler(getMainLooper()){
+      /*  mHandler = new Handler(getMainLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
                 String data = msg.getData().getString(MESSAGE_KEY);
@@ -48,19 +51,18 @@ public class MainActivity extends AppCompatActivity {
 
         downloadThread = new DownloadThread(MainActivity.this);
         downloadThread.setName("Download Thread");
-        downloadThread.start();
+        downloadThread.start();*/
 
         btnRunCode.setOnClickListener(v -> {
 
-            log("Runner Code");
-            displayProgressBar(true);
-
-            //Send message to download handler
+//            log("Runner Code");
+//            displayProgressBar(true);
+          /*   //Send message to download handler
             for (String song: PLayList.songs){
                 Message message = Message.obtain();
                 message.obj=song;
                 downloadThread.downloadHandler.sendMessage(message);
-            }
+            }*/
 
           /*  Thread thread = new Thread(new Runnable() {
                 @Override
@@ -82,8 +84,7 @@ public class MainActivity extends AppCompatActivity {
             });
             thread.start();*/
 
-
-//            for (String song:PLayList.songs){
+          //            for (String song:PLayList.songs){
 //                DownloadThread thread = new DownloadThread();
 //                thread.setName("Download Thread");
 //                thread.start();
@@ -118,7 +119,65 @@ public class MainActivity extends AppCompatActivity {
 //            Thread thread = new Thread(runnable);
 //            thread.setName("Download Thread");
 //            thread.start();
+
+//            log("Runner Code");
+//            displayProgressBar(true);
+
+
+//            MyTask myTask1 =  new MyTask();
+//            myTask1.execute("Red", "Green","Blue","Yellow");
+            if (mTaskRunning && myTask != null){
+                myTask.cancel(true);
+                mTaskRunning=false;
+            }else {
+                myTask =  new MyTask();
+                myTask.execute("Red", "Green","Blue","Yellow");
+                mTaskRunning =true;
+            }
         });
+    }
+
+    class MyTask extends AsyncTask<String,String,String>{
+
+        @Override
+        protected String doInBackground(String... strings) {
+            for (String value:strings){
+
+                if (isCancelled()){
+                    publishProgress("task us cancelled");
+                    break;
+                }
+                Log.d(TAG,"doInBackground: "+value);
+                publishProgress(value);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            displayProgressBar(false);
+            return "Download Cpmpleted";
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+
+            log(values[0]);
+        }
+        @Override
+        protected void onPostExecute(String s) {
+            log(s);
+        }
+
+        @Override
+        protected void onCancelled() {
+            log("task has been canelled");
+        }
+        @Override
+        protected void onCancelled(String s) {
+            log("Cancelled with return data,:" + s);
+        }
     }
 
     public void log(String message) {
