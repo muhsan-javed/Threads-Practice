@@ -1,13 +1,15 @@
 package com.muhsanjaved.threads_practice;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 
-import android.os.AsyncTask;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,14 +17,17 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
-public class MainActivity extends AppCompatActivity implements AsyncFragment.MyTaskHandler{
+public class MainActivity extends AppCompatActivity implements AsyncFragment.MyTaskHandler, LoaderManager.LoaderCallbacks<String> {
 
     private static final String MESSAGE_KEY = "MESSAGE_KEY";
     private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
+    private static final String DATA_KEY = "DATA_KEY";
     Button btnClear, btnRunCode;
     TextView output_text;
     private static final String TAG ="MyTag";
@@ -71,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFragment.MyT
         downloadThread.start();*/
 
         btnRunCode.setOnClickListener(v -> {
-
 //            log("Runner Code");
 //            displayProgressBar(true);
           /*   //Send message to download handler
@@ -153,14 +157,19 @@ public class MainActivity extends AppCompatActivity implements AsyncFragment.MyT
             }*/
 
 //            mAsyncFragment.runTask("Red", "Green","Blue","Yellow");
-
-            for (int i=0; i<10; i++){
+          /*  for (int i=0; i<10; i++){
                 Work work = new Work(i+1);
                 executorService.execute(work);
-            }
+            }*/
+
+            Bundle bundle = new Bundle();
+            bundle.putString(DATA_KEY,"some url that returns some daa");
+
+//            getSupportLoaderManager().initLoader(100, bundle,this).forceLoad();
+            getSupportLoaderManager().restartLoader(100, bundle,this).forceLoad();
         });
 
-        executorService = Executors.newFixedThreadPool(5);
+//        executorService = Executors.newFixedThreadPool(5);
     }
 
     @Override
@@ -233,5 +242,62 @@ public class MainActivity extends AppCompatActivity implements AsyncFragment.MyT
         output_text = findViewById(R.id.output_text);
         progressBar = findViewById(R.id.progressBar);
         scrollView = findViewById(R.id.scrollViewId);
+    }
+
+    @NonNull
+    @Override
+    public Loader<String> onCreateLoader(int id, @Nullable Bundle args) {
+
+        List<String> songsList = Arrays.asList(PLayList.songs);
+
+        return new MyTaskLoader(this, args,songsList);
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<String> loader, String data) {
+        log(data);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<String> loader) {
+
+    }
+
+    private static class MyTaskLoader extends AsyncTaskLoader<String>
+    {
+        private Bundle mArgs;
+        private List<String> mSongsList;
+        public MyTaskLoader(@NonNull Context context, Bundle args, List<String> songsList) {
+            super(context);
+            this.mArgs=args;
+            mSongsList = songsList;
+        }
+
+        @Nullable
+        @Override
+        public String loadInBackground() {
+            String data = mArgs.getString(DATA_KEY);
+
+            Log.d(TAG, "loadInBackground: URL:"+ data);
+            Log.d(TAG, "loadInBackground:  Thread name: "+ Thread.currentThread().getName());
+
+            for (String song:mSongsList){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Log.d(TAG,"loadInBackground: Song Name: "+song);
+            }
+
+            Log.d(TAG, "loadInBackground:  Thread Terminated:: ");
+            return "\n Result from Loader";
+        }
+
+        @Override
+        public void deliverResult(@Nullable String data) {
+            data += " :Modified";
+            super.deliverResult(data);
+        }
     }
 }
